@@ -1,21 +1,24 @@
+extern crate rust_grep;
+
 use std::env;
-use std::fs::File;
-use std::io::prelude::*;
+use std::process;
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let query = &args[1];
-    let filename = &args[2];
+    let config = rust_grep::Config::new(&args).unwrap_or_else(|err| {
+        
+        println!("Problem parsing arguments: {}", err);
+        process::exit(1);
+    });
 
-    println!("Searching for {}", query);
-    println!("In file {}", filename);
+    println!("Searching for {}", config.query);
+    println!("In file {}", config.filename);
 
-    let mut f = File::open(filename).expect("ファイルがありません");
-    let mut contents = String::new();
+    if let Err(e) = rust_grep::run(config) {
+        println!("Application error: {}", e);
 
-    f.read_to_string(&mut contents)
-    .expect("ファイルの読み込みに失敗しました。");
-
-    println!("With text:\n{}", contents);
+        process::exit(1);
+    }
 }
